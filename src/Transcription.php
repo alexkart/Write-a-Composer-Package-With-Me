@@ -4,32 +4,45 @@ namespace Laracasts\Transcriptions;
 
 class Transcription
 {
-    protected array $lines;
+    public function __construct(protected array $lines)
+    {
+        $this->lines = $this->discardInvalidLines(array_map('trim', $lines));
+    }
 
     public static function load(string $path): self
     {
-        $instance = new static;
-
-        $instance->lines = $instance->discardIrrelevantLines(file($path));
-
-        return $instance;
+        return new static(file($path));
     }
 
     public function lines(): array
     {
-        return $this->lines;
+        $lines = [];
+
+        for ($i = 0; $i < count($this->lines); $i += 2) {
+            $lines[] = new Line($this->lines[$i], $this->lines[$i + 1]);
+        }
+
+        return $lines;
+    }
+    
+    public function htmlLines()
+    {
+        return implode("\n", array_map(
+            fn(Line $line) => $line->toAnchorTag(),
+            $this->lines()
+        ));
     }
 
-    protected function discardIrrelevantLines(array $lines): array
+    protected function discardInvalidLines(array $lines): array
     {
         return array_values(array_filter(
-            array_map('trim', $lines),
-            fn($line) => $line !== 'WEBVTT' && $line !== '' && ! is_numeric($line)
+            $lines,
+            fn($line) => Line::valid($line)
         ));
     }
 
     public function __toString(): string
     {
-        return implode("", $this->lines);
+        return implode("\n", $this->lines);
     }
 }

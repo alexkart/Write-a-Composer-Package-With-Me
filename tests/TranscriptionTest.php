@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use Laracasts\Transcriptions\Line;
 use Laracasts\Transcriptions\Transcription;
 use PHPUnit\Framework\TestCase;
 
@@ -19,11 +20,15 @@ class TranscriptionTest extends TestCase
     }
 
     /** @test */
-    function it_can_convert_to_an_array_of_lines()
+    function it_can_convert_to_an_array_of_line_objects()
     {
         $file = __DIR__ . '/stubs/basic-example.vtt';
 
-        $this->assertCount(4, Transcription::load($file)->lines());
+        $lines = Transcription::load($file)->lines();
+
+        $this->assertCount(2, $lines);
+
+        $this->assertContainsOnlyInstancesOf(Line::class, $lines);
     }
 
     /** @test */
@@ -32,6 +37,19 @@ class TranscriptionTest extends TestCase
         $transcription = Transcription::load(__DIR__ . '/stubs/basic-example.vtt');
 
         $this->assertStringNotContainsString('WEBVTT', $transcription);
-        $this->assertCount(4, $transcription->lines());
+        $this->assertCount(2, $transcription->lines());
+    }
+
+    /** @test */
+    function it_renders_the_lines_as_html()
+    {
+        $transcription = Transcription::load(__DIR__ . '/stubs/basic-example.vtt');
+
+        $expected = <<<EOT
+<a href="?time=00:03">Here is a</a>
+<a href="?time=00:04">example of a VTT file.</a>
+EOT;
+
+        $this->assertEquals($expected, $transcription->htmlLines());
     }
 }
