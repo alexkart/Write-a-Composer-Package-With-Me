@@ -5,6 +5,7 @@ namespace Laracasts\Transcriptions;
 use ArrayIterator;
 use Countable;
 use IteratorAggregate;
+use Traversable;
 
 class Lines implements Countable, IteratorAggregate
 {
@@ -13,7 +14,7 @@ class Lines implements Countable, IteratorAggregate
         //
     }
 
-    public function asHtml()
+    public function asHtml(): string
     {
         $formattedLines = array_map(
             fn(Line $line) => $line->toHtml(),
@@ -28,7 +29,7 @@ class Lines implements Countable, IteratorAggregate
         return count($this->lines);
     }
 
-    public function getIterator()
+    public function getIterator(): Traversable
     {
         return new ArrayIterator($this->lines);
     }
